@@ -1,0 +1,23 @@
+LICENCES : mise en place (une seule fois)
+
+Principe : chaque acheteur reçoit un code de 16 caractères. L'app le fait vérifier par ton serveur (worker.js) et l'attache à 2 téléphones maximum.
+
+1. Cloudflare : créer un compte gratuit, puis un Worker et coller le contenu de worker.js.
+2. Créer un espace KV nommé LIC et le lier au Worker sous le nom LIC.
+3. Ajouter deux secrets dans le Worker :
+   - SECRET : longue phrase aléatoire. NE JAMAIS la changer après avoir vendu des codes.
+   - ADMIN_TOKEN : ton mot de passe du panneau /admin.
+   (Facultatif : variable MAX_DEVICES pour changer le nombre de téléphones par code.)
+4. Déployer, puis ouvrir https://TON-WORKER.workers.dev/admin : générer des codes, voir l'état d'un code, libérer les téléphones, révoquer.
+5. Dans index.html, tout en haut du script, remplir :
+   LIC_URL = l'adresse de ton Worker (sans / final)
+   BUY_URL = ton lien Chariow (facultatif)
+   SUPPORT_WA = ton WhatsApp, ex. 2250700000000 (facultatif)
+   Tant que LIC_URL est vide, l'app n'est PAS verrouillée (version de test).
+6. Chariow : à vérifier dans ton tableau de bord si les "clés de licence" permettent d'importer ta liste de codes (un code par acheteur).
+
+LIMITES (à connaître)
+- Internet est nécessaire pour activer ; ensuite l'app revérifie tous les 7 jours et tolère 45 jours sans connexion.
+- Si un client vide les données de son navigateur, il utilise un 2e emplacement : prévoir "Libérer les téléphones" dans /admin.
+- Les sauvegardes ne contiennent ni le code ni l'identifiant du téléphone : un fichier de sauvegarde ne permet pas de copier une licence.
+- Le verrou arrête le partage de lien ordinaire, pas un utilisateur déterminé qui modifierait le fichier.

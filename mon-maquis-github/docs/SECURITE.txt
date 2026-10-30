@@ -1,0 +1,26 @@
+MON MAQUIS : SÉCURITÉ (à faire une fois)
+
+A. PROTÉGER TES COMPTES (le plus important : un compte volé = tout est volé)
+1. Active la validation en 2 étapes (2FA) sur : Cloudflare, Netlify, Chariow, ton e-mail (iCloud), et GitHub si tu l'utilises.
+2. Un mot de passe différent par compte, dans un gestionnaire de mots de passe (trousseau iCloud ou Bitwarden).
+3. Active les codes de secours 2FA et range-les hors du téléphone (papier, ou clé USB).
+4. Ne te connecte jamais à /admin depuis un ordinateur ou un Wi-Fi public.
+
+B. SERVEUR DE LICENCES (Cloudflare)
+1. SECRET : 40 caractères aléatoires minimum. Copie-le dans 2 endroits sûrs. Si tu le perds ou le changes, TOUS les codes vendus deviennent invalides.
+2. ADMIN_TOKEN : 24 caractères aléatoires minimum (le serveur refuse moins de 16). Pas un mot du dictionnaire.
+3. Ne mets JAMAIS SECRET ni ADMIN_TOKEN dans index.html, dans un message WhatsApp ou dans une capture d'écran.
+4. Dans Cloudflare > Security > WAF > Rate limiting : une règle « /admin/api : 10 requêtes par minute » (bloque les essais de mot de passe).
+5. Génère tes codes par lots (ex. 50), garde la liste dans un fichier protégé, jamais dans un dossier public.
+6. Après chaque vente : envoie un code UNIQUE. Si un client se plaint de « code déjà utilisé » : /admin > État du code > Libérer les téléphones.
+
+C. NETLIFY
+1. Publie seulement le dossier « site » : index.html, sw.js, manifest.webmanifest, icônes et _headers. Jamais worker.js, ni les guides, ni une liste de codes.
+2. Le fichier _headers ajoute les protections du navigateur (anti-iframe, anti-scripts étrangers).
+3. Après avoir rempli LIC_URL, remplace le « *.workers.dev » du _headers par l'adresse exacte de ton Worker.
+4. Active la protection des déploiements : seuls toi/ton compte peuvent publier.
+
+D. LIMITES (honnêtes)
+- Le verrou arrête le partage de lien et de code ordinaires (2 téléphones max par code). Un utilisateur technique peut modifier sa copie : ce risque ne disparaît pas.
+- La meilleure défense reste la valeur : mises à jour, support WhatsApp, nouvelles boissons.
+- Si tu soupçonnes un code partagé : /admin > Révoquer, puis renvoie un nouveau code au vrai client.

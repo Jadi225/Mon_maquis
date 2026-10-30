@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon Maquis</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#b5541c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#faf6ee;--card:#fff;--tx:#2a2118;--mut:#7a6d5c;--br:#e4dac8;--ok:#1f8a4c;--ko:#c93a2b;--pri:#b5541c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130e;--card:#26200f;--tx:#f4ecdd;--mut:#b3a58f;--br:#3b3220}}
+:root[data-theme="dark"]{--bg:#17130e;--card:#26200f;--tx:#f4ecdd;--mut:#b3a58f;--br:#3b3220}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:17px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+header{padding:10px 14px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center}
+header b{font-size:20px}header small{color:var(--mut)}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.sm{background:var(--card);border:1px solid var(--br);border-radius:12px;padding:8px 12px}
+main{flex:1;overflow-y:auto;padding:12px 12px 96px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--br);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;background:none;padding:8px 0;font-size:11px;color:var(--mut)}
+nav button span{display:block;font-size:22px}
+nav button.on{color:var(--pri);font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);border:2px solid var(--br);border-radius:18px;padding:12px 8px;text-align:center}
+.low{border-color:var(--ko)}
+.ic{font-size:40px}.n{font-weight:700}.p{color:var(--mut);font-size:14px;margin-bottom:8px}
+.qty{display:flex;gap:6px;align-items:center}
+.qty input{min-width:0;flex:1;text-align:center;font-size:22px;font-weight:800}
+input{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--br);border-radius:12px;padding:10px;width:100%;min-width:0}
+.pm{width:44px;height:44px;flex:none;border-radius:12px;font-size:24px;font-weight:800;background:var(--pri);color:#fff}
+.pm.g{background:var(--br);color:var(--tx)}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.gap{display:flex;gap:6px}
+.tot{font-size:24px;font-weight:800;color:var(--ok)}
+.row{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--br);border-radius:16px;padding:10px;margin-bottom:8px}
+.row .t{flex:1;min-width:0}.row small,small{color:var(--mut);display:block}
+.row input[type=number]{width:64px;text-align:center;font-weight:800}
+.k{background:var(--card);border:1px solid var(--br);border-radius:16px;padding:14px;margin-bottom:10px}
+.k h3{margin:0 0 4px;font-size:14px;color:var(--mut);font-weight:600}
+.k .v{font-size:28px;font-weight:800}
+.alert{color:#fff;background:var(--ko);border-radius:10px;padding:2px 8px;font-size:12px;font-weight:700}
+.hint{color:var(--mut);font-size:14px;margin:6px 0 12px}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.chip{border-radius:14px;padding:14px 6px;font-weight:800;color:#fff;font-size:16px}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+textarea{font:inherit;font-size:13px;color:var(--tx);background:var(--bg);border:1px solid var(--br);border-radius:12px;padding:8px}
+#ts{position:fixed;left:12px;right:12px;bottom:calc(78px + env(safe-area-inset-bottom,0px));background:#2a2118;color:#fff;border-radius:14px;padding:10px 14px;display:none;z-index:8;justify-content:space-between;align-items:center;gap:10px}
+.f label{font-size:13px;color:var(--mut)}
+.big{width:100%;border-radius:16px;padding:16px;font-size:18px;font-weight:800;color:#fff;background:var(--ok);margin:4px 0 10px}
+</style>
+</head>
+<body>
+<header><b id="br">🍺 Mon Maquis</b><span style="display:flex;align-items:center;gap:8px"><small id="dt"></small><button class="sm" id="rl" onclick="role()"></button></span></header>
+<main id="m"></main>
+<nav id="nav"></nav>
+<script>
+/* ===== RÉGLAGES DU VENDEUR : à remplir avant de vendre ===== */
+var LIC_URL="https://mon-maquis-licences.jardelehouman.workers.dev";    /* adresse de ton serveur de licences, sans / final (ex : https://mon-maquis.moncompte.workers.dev). Vide = AUCUN verrou (version de test). */
+var BUY_URL="https://xlzrpfoi.mychariow.store/mon-maquis";    /* lien Chariow pour acheter (facultatif) */
+var SUPPORT_WA="2250757887372"; /* ton WhatsApp, format international sans + ni espaces (ex : 2250700000000) (facultatif) */
+/* ============================================================ */
+var REVERIF=7*864e5,GRACE=45*864e5,ERR={invalide:"Ce code n’est pas valide. Vérifie chaque caractère.",utilise:"Ce code est déjà utilisé sur trop de téléphones. Contacte le vendeur.",revoque:"Ce code a été désactivé. Contacte le vendeur.",appareil:"Problème sur ce téléphone. Recharge la page.",serveur:"Le service est indisponible. Réessaie plus tard."};
+var K="monmaquis_v2",tab=0,D;
+var CAT=[
+{k:"castel",n:"Castel",i:"🍻",a:350,v:500,c:12},
+{k:"beaufort",n:"Beaufort",i:"🍺",a:400,v:600,c:12},
+{k:"bock",n:"Bock",i:"🍺",a:400,v:600,c:12},
+{k:"guinness",n:"Guinness",i:"🍻",a:500,v:700,c:24},
+{k:"heineken",n:"Heineken",i:"🍺",a:500,v:700,c:24},
+{k:"bud",n:"Bud",i:"🍺",a:700,v:1000,c:24},
+{k:"desperados",n:"Desperados",i:"🍺",a:400,v:600,c:24},
+{k:"rhino",n:"Rhino",i:"🍺",a:350,v:500,c:24},
+{k:"cody-beer",n:"Cody’s Beer 5,9%",i:"🍺",a:400,v:600,c:24},
+{k:"cody-export",n:"Cody’s Export 5,4%",i:"🍺",a:600,v:1000,c:24},
+{k:"coca",n:"Coca-Cola 30cl",i:"🥤",a:350,v:500,c:24},
+{k:"fanta",n:"Fanta 30cl",i:"🥤",a:200,v:300,c:24},
+{k:"schweppes",n:"Schweppes Agrumes",i:"🥤",a:200,v:300,c:24},
+{k:"orangina",n:"Orangina",i:"🥤",a:350,v:500,c:24},
+{k:"sprite",n:"Sprite 30cl",i:"🥤",a:200,v:300,c:24},
+{k:"youki",n:"Youki 30cl",i:"🥤",a:200,v:300,c:24},
+{k:"eau",n:"Eau minérale",i:"💧",a:150,v:300,c:12},
+{k:"cody-energy",n:"Cody’s Energy",i:"⚡",a:350,v:500,c:24},
+{k:"vody-tropical",n:"Vody Tropical",i:"🍹",a:500,v:800,c:24},
+{k:"vody-energy",n:"Vody Vodka Energy",i:"🍹",a:400,v:600,c:24},
+{k:"velpierre",n:"Valpierre Petit",i:"🍷",a:700,v:1000,c:12},
+{k:"velpierre2",n:"Valpierre Grand",i:"🍷",a:850,v:1200,c:12},
+{k:"sangria-chateaux",n:"Châteaux de France Sangria",i:"🍷",a:1000,v:1500,c:12},
+{k:"vin-chateaux",n:"Châteaux de France vin rouge",i:"🍷",a:1000,v:1500,c:12},
+{k:"sangria-forte",n:"Sangria Forte",i:"🍷",a:1000,v:1500,c:12}];
+/* Illustrations originales DELYART (génériques, sans marque) : une forme par type de boisson + 2 couleurs */
+var SH={
+ b33:'<path d="M57 15H71V40C71 48 82 54 82 66V112Q82 118 76 118H52Q46 118 46 112V66C46 54 57 48 57 40Z" fill="G"/><rect x="55" y="8" width="18" height="8" rx="2.5" fill="A"/><rect x="46" y="72" width="36" height="28" fill="#f7efdc"/><rect x="46" y="72" width="36" height="7" fill="A"/><circle cx="64" cy="89" r="5.5" fill="A"/>',
+ b65:'<path d="M56 12H72V38C72 46 90 50 90 64V112Q90 119 83 119H45Q38 119 38 112V64C38 50 56 46 56 38Z" fill="G"/><rect x="54" y="5" width="20" height="8" rx="2.5" fill="A"/><rect x="38" y="70" width="52" height="32" fill="#f7efdc"/><rect x="38" y="70" width="52" height="8" fill="A"/><circle cx="64" cy="90" r="6.5" fill="A"/>',
+ soda:'<path d="M57 16H71V34C71 42 86 46 86 58V108Q86 116 78 116H50Q42 116 42 108V58C42 46 57 42 57 34Z" fill="G"/><rect x="55" y="9" width="18" height="8" rx="2.5" fill="A"/><rect x="42" y="66" width="44" height="26" fill="A"/><path d="M42 79Q53 72 64 79T86 79" stroke="#fff" stroke-opacity=".75" stroke-width="3.5" fill="none"/>',
+ eau:'<path d="M56 14H72V22C72 30 84 34 84 44V108Q84 116 76 116H52Q44 116 44 108V44C44 34 56 30 56 22Z" fill="G" fill-opacity=".9"/><rect x="55" y="6" width="18" height="9" rx="3" fill="A"/><rect x="44" y="58" width="40" height="24" fill="A"/><path d="M44 70Q54 63 64 70T84 70" stroke="#fff" stroke-width="3.5" fill="none"/><path d="M44 96H84M44 104H84" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>',
+ can:'<rect x="42" y="22" width="44" height="92" rx="9" fill="G"/><rect x="45" y="15" width="38" height="11" rx="4" fill="#cfd5dc"/><rect x="42" y="54" width="44" height="30" fill="A"/><path d="M68 58L58 71H65L60 82L72 67H65Z" fill="G"/>',
+ vin:'<path d="M58 22H70V46C70 54 84 58 84 72V112Q84 118 78 118H50Q44 118 44 112V72C44 58 58 54 58 46Z" fill="G"/><rect x="57" y="7" width="14" height="19" rx="3" fill="A"/><rect x="44" y="78" width="40" height="28" fill="#f4ead2"/><rect x="44" y="78" width="40" height="5" fill="A"/><circle cx="64" cy="94" r="5" fill="none" stroke="A" stroke-width="2.5"/>',
+ mix:'<path d="M57 14H71V36C97 44 99 74 91 98Q86 116 64 116Q42 116 37 98C29 74 31 44 57 36Z" fill="G"/><rect x="55" y="7" width="18" height="8" rx="2.5" fill="A"/><ellipse cx="64" cy="84" rx="26" ry="14" fill="A"/><path d="M68 74L58 86H65L60 96L72 82H65Z" fill="G"/>'
+};
+function SV(t,g,a){
+ var s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><ellipse cx="64" cy="122" rx="24" ry="3.6" fill="#000" fill-opacity=".2"/>'+SH[t].replace(/"G"/g,'"'+g+'" stroke="#fff" stroke-opacity=".28" stroke-width="1.6"').replace(/"A"/g,'"'+a+'"')+'<path d="M50 60V108" stroke="#fff" stroke-opacity=".28" stroke-width="4" stroke-linecap="round"/></svg>';
+ return"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s)}
+var ILL={castel:["b65","#5c3b1e","#e9b949"],beaufort:["b65","#2d5e3e","#f0d98a"],bock:["b65","#7b4a1f","#d97b3a"],
+ guinness:["b33","#2b1f17","#b9a37a"],heineken:["b33","#2f6a45","#e9eef0"],bud:["b33","#8a5a2b","#d9d4c4"],desperados:["b33","#3f7a5a","#e5b43a"],rhino:["b33","#6a4320","#8fb6c9"],"cody-beer":["b33","#3b5f8a","#e9d27a"],"cody-export":["b33","#5a3b2a","#c7d7e3"],
+ coca:["soda","#3a2418","#e8e0d0"],fanta:["soda","#e08a1e","#f4f0e6"],schweppes:["soda","#c9b23a","#2e5f4a"],orangina:["soda","#d9812a","#fff3d6"],sprite:["soda","#9ccf7a","#f4f6ee"],youki:["soda","#e6b13a","#6b4a8a"],
+ eau:["eau","#bfe3f2","#3b8fc4"],"cody-energy":["can","#2a3f7a","#f2c230"],"vody-tropical":["mix","#f09a2f","#2f9e8a"],"vody-energy":["mix","#5a2f8a","#f2c230"],
+ velpierre:["vin","#3a1020","#b78a3c"],velpierre2:["vin","#3a1020","#c9a24a"],"sangria-chateaux":["vin","#8a1c2e","#e9d7b0"],"vin-chateaux":["vin","#2a1018","#9c7b4a"],"sangria-forte":["vin","#a02a3a","#f0b44a"]};
+var IMG={};for(var ik in ILL)IMG[ik]=SV(ILL[ik][0],ILL[ik][1],ILL[ik][2]);
+function IC(x,s){var k=x.k||((CAT.filter(function(c){return c.n==x.n})[0]||{}).k);
+ return IMG[k]?`<img src="${IMG[k]}" alt="" style="width:${s}px;height:${s}px;object-fit:contain;display:block;margin:0 auto">`:`<span style="font-size:${Math.round(s*.7)}px;line-height:${s}px;display:block">${E(x.i)}</span>`}
+function EI(p){var k=p.k||((CAT.filter(function(c){return c.n==p.n})[0]||{}).k);
+ return IMG[k]?'<div style="width:54px;flex:none">'+IC(p,48)+'</div>':'<input style="width:70px;text-align:center" value="'+E(p.i)+'" onchange="ed('+p.id+',\'i\',this.value)">'}
+function def(){return{p:[],log:[],cons:{},mode:"casse",setup:false}}
+try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!D||!D.p)D=def();
+if(D.setup===undefined)D.setup=true;
+if(!D.dev)D.dev=rnd();if(D.lic===undefined)D.lic=null;if(D.role=="gerant")D.role="gerant";MIG();save();
+function save(){try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}}
+function num(v){return Math.max(0,parseInt(String(v).replace(/\s/g,""),10)||0)}
+function F(n){return Math.round(n).toLocaleString("fr-FR")+" F"}
+function E(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function P(id){return D.p.filter(function(x){return x.id==id})[0]}
+function dk(t){return new Date(t-216e5).toLocaleDateString("fr-CA")}
+function td(){return dk(Date.now())}
+function eff(e,s){var p=P(e.pid);if(!p)return;
+ if(e.type=="arrivage"){p.s+=s*e.q*p.c;D.cons[p.id]=(D.cons[p.id]||0)+s*e.q}
+ else if(e.type=="rendu")D.cons[p.id]=(D.cons[p.id]||0)-s*e.q;
+ else if(e.type=="ajust")p.s+=s*e.q;
+ else if(e.type!="recouvre")p.s-=s*e.q}
+function add(type,pid,q,c){vib();var p=P(pid),e={t:Date.now(),type:type,pid:pid,q:q,pa:p.a,pv:p.v};if(c)e.c=c;D.log.push(e);eff(e,1);save();draw();toast(LBL[type]+" · "+p.n+" "+(q>0?"+":"")+q,1)}
+function undo(){var e=D.log.pop();if(!e)return;eff(e,-1);save();draw()}
+function resetV(){dlg("Remettre à zéro les ventes d’aujourd’hui ?",resetV2)}
+function resetV2(){var d=td();
+ D.log=D.log.filter(function(e){if(e.type=="vente"&&dk(e.t)==d){eff(e,-1);return false}return true});save();draw()}
+function today(pid,type){var d=td(),n=0;D.log.forEach(function(e){if(e.pid==pid&&e.type==type&&dk(e.t)==d)n+=e.q});return n}
+function sum(pre){var r={rec:0,cout:0,casse:0,off:0,np:0,rc:0,dep:0,cr:0};
+ D.log.forEach(function(e){if(dk(e.t).indexOf(pre)!=0)return;if(e.type=="paiement"){r.rc+=e.amt;return}if(e.type=="depense"){r.dep+=e.amt;return}var p=P(e.pid);if(!p)return;var a=e.pa==null?p.a:e.pa,v=e.pv==null?p.v:e.pv;
+  if(e.type=="vente"){r.rec+=e.q*v;r.cout+=e.q*a}
+  else if(e.type=="casse")r.casse+=e.q*a;
+  else if(e.type=="offert")r.off+=e.q*a;
+  else if(e.type=="nonpaye"){r.rec+=e.q*v;r.cout+=e.q*a;r.cr+=e.q*v}
+  else if(e.type=="recouvre")r.rc+=e.q*v});
+ r.net=r.rec-r.cout-r.casse-r.off;r.pertes=r.casse+r.off;r.ben=r.net-r.dep;return r}
+function setV(id,n){var d=num(n)-today(id,"vente");if(d)add("vente",id,d);else draw()}
+function arr(id,type){var q=num(document.getElementById("aq"+id).value);if(q)add(type,id,q)}
+function addP(id){var q=num(document.getElementById("pq"+id).value);if(q)add(D.mode=="offert"?"offert":"casse",id,q)}
+function ed(id,k,v){var p=P(id);if(k=="n"||k=="i")p[k]=v.trim()||p[k];else{
+ if(k=="s"){var d=num(v)-p.s;if(d)D.log.push({t:Date.now(),type:"ajust",pid:id,q:d})}
+ if(k=="ac"){p.ac=num(v);p.ok=1;p.a=p.ac/(p.c||1)}
+ else if(k=="c"){var ac=AC(p);p.c=num(v)||1;p.ac=ac;p.a=ac/p.c}
+ else p[k]=num(v)}
+ save();draw()}
+function del(id){var p=P(id);dlg("Supprimer "+E(p.n)+" et son historique ?",function(){del2(id)})}
+function del2(id){
+ D.p=D.p.filter(function(x){return x.id!=id});D.log=D.log.filter(function(e){return e.pid!=id});save();draw()}
+function nouv(){var g=function(i){return document.getElementById(i).value},n=g("nn").trim();
+ if(!n){toast("Écris le nom de la boisson.");return}
+ D.p.push({id:Date.now(),n:n,i:g("ni").trim()||"🍺",ac:num(g("na")),a:num(g("na"))/(num(g("nc"))||1),ok:num(g("na"))>0?1:0,v:num(g("nv")),c:num(g("nc"))||1,s:num(g("ns"))});save();draw()}
+function raz(){dlg("Tout effacer et recommencer la configuration ?",function(){D=def();ob={step:1,sel:{}};save();draw()})}
+function wa(){var t=sum(td()),m=sum(td().slice(0,7)),all=sum(""),s="📊 Bilan Mon Maquis "+new Date(Date.now()-216e5).toLocaleDateString("fr-FR")+"\n💰 Recette : "+F(t.rec)+"\n📈 Marge : "+F(t.net)+"\n✅ Bénéfice après dépenses : "+F(t.ben)+"\n⚠️ Pertes : "+F(t.pertes)+"\n💸 Dépenses : "+F(t.dep)+(NV()?"\n⚠️ Estimation : prix d’achat à vérifier ("+NV()+" boissons)":"")+"\n📅 Bénéfice du mois (après dépenses) : "+F(m.ben)+"\n📒 Crédits à récupérer : "+F(CRT())+"\n\n📦 Stock :\n";
+ D.p.forEach(function(p){s+="- "+p.n+" : "+p.s+(p.s<=p.c?" ⚠️ à commander":"")+"\n"});
+ window.open("https://wa.me/?text="+encodeURIComponent(s),"_blank")}
+
+function vVendre(){return `<div class="bar"><div><small>Recette du jour</small><div class="tot">${F(sum(td()).rec)}</div></div><div class="gap"><button class="sm" onclick="undo()">↩️ Annuler</button>${D.role=="gerant"?"":'<button class="sm" onclick="resetV()">🗑️ Zéro</button>'}</div></div>${D.p.length>8?'<input placeholder="🔍 Chercher une boisson" oninput="fq(this.value)" style="margin-bottom:10px">':""}<div class="grid">`+
+ D.p.map(function(p){var q=today(p.id,"vente");return `<div class="tile${p.s<=p.c?" low":""}"><div onclick="setV(${p.id},${q+1})" style="cursor:pointer"><div class="ic">${IC(p,72)}</div><div class="n">${E(p.n)}</div><div class="p">${F(p.v)} · stock ${STK(p)}</div></div><div class="qty"><button class="pm g" onclick="setV(${p.id},${q-1})">−</button><input type="number" inputmode="numeric" min="0" value="${q}" onfocus="this.select()" onchange="setV(${p.id},this.value)"><button class="pm" onclick="setV(${p.id},${q+1})">+</button></div></div>`}).join("")+`</div><p class="hint">Touche la bouteille = +1 vendue. Grosse quantité : tape le nombre. Une erreur ? Touche Annuler.</p>`}
+
+function vArrivage(){return `<p class="hint">Entre le nombre de casiers puis touche <b>Reçu</b> (le stock monte) ou <b>Rendu</b> (casiers vides rendus).</p>`+
+ D.p.map(function(p){return `<div class="row"><div style="width:44px;flex:none">${IC(p,44)}</div><div class="t"><b>${E(p.n)}</b><small>Stock ${STK(p)} · casiers à rendre : ${D.cons[p.id]||0}</small></div><input type="number" inputmode="numeric" min="1" id="aq${p.id}" value="1" onfocus="this.select()"><button class="pm" onclick="arr(${p.id},'arrivage')">📥</button><button class="pm g" onclick="arr(${p.id},'rendu')">📤</button></div>`}).join("")+`<small>📥 = Reçu · 📤 = Rendu</small><div style="margin-top:10px"><button class="sm" onclick="undo()">↩️ Annuler la dernière action</button></div>`}
+
+var M=[["casse","💥 Casse","#c93a2b","a"],["offert","🎁 Offert / Patron","#d98a12","a"]];
+function vPertes(){var cur=M.filter(function(m){return m[0]==D.mode})[0]||M[0];
+ return `<div class="chips">`+M.map(function(m){return `<button class="chip" style="background:${m[2]};opacity:${D.mode==m[0]?1:.45};outline:${D.mode==m[0]?"3px solid var(--tx)":"none"}" onclick="D.mode='${m[0]}';save();draw()">${m[1]}</button>`}).join("")+`</div><p class="hint">Casse et offerts : valeur au prix d’achat. Pour un client qui paie plus tard, va dans Crédits.</p>`+
+ D.p.map(function(p){return `<div class="row"><div style="width:44px;flex:none">${IC(p,44)}</div><div class="t"><b>${E(p.n)}</b><small>Aujourd’hui : ${today(p.id,cur[0])} · ${F(cur[3]=="a"?p.a:p.v)} l’unité</small></div><input type="number" inputmode="numeric" min="1" id="pq${p.id}" value="1" onfocus="this.select()"><button class="pm" style="width:auto;padding:0 12px;font-size:15px" onclick="addP(${p.id})">Ajouter</button></div>`}).join("")+`<div style="margin-top:10px"><button class="sm" onclick="undo()">↩️ Annuler la dernière action</button></div>`}
+
+function vBilan(){var t=sum(td()),m=sum(td().slice(0,7)),all=sum(""),low=D.p.filter(function(p){return p.s<=p.c});
+ return `${BKW()}${NVW()}<div class="k"><h3>💰 Ventes du jour</h3><div class="v">${F(t.rec)}</div><small>dont à crédit : ${F(t.cr)}</small></div>
+<div class="k"><h3>📈 Marge du jour (avant dépenses)${NV()?" · estimée":""}</h3><div class="v" style="color:var(${t.net<0?"--ko":"--ok"})">${F(t.net)}</div><small>Ventes ${F(t.rec)} − achats ${F(t.cout)} − pertes ${F(t.pertes)}</small></div>
+<div class="k"><h3>✅ Bénéfice après dépenses${NV()?" · estimé":""}</h3><div class="v" style="color:var(${t.ben<0?"--ko":"--ok"})">${F(t.ben)}</div><small>Dépenses du jour : ${F(t.dep)}</small></div>
+<div class="k"><h3>📅 Ce mois (après dépenses)${NV()?" · estimé":""}</h3><div class="v">${F(m.ben)}</div><small>Marge ${F(m.net)} · pertes ${F(m.pertes)} · dépenses ${F(m.dep)}</small></div>
+<div class="k"><h3>📒 Crédits clients à récupérer</h3><div class="v">${F(CRT())}</div></div>
+<div class="k"><h3>📦 Stock (alerte à 1 casier ou moins)</h3>`+D.p.map(function(p){return `<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;flex:none">${IC(p,28)}</span>${E(p.n)}</span><span>${STK(p)}${p.s<=p.c?' <span class="alert">À commander</span>':""}</span></div>`}).join("")+`</div>${DP()}${CL()}${JR()}<button class="big" onclick="wa()">📲 Envoyer le bilan par WhatsApp</button>${BK()}`}
+
+function vBoissons(){return NVB()+'<div class="k"><h3>🏷️ Nom du maquis</h3><input value="'+E(D.nom||"")+'" placeholder="Ex : O&#39;Show" onchange="D.nom=this.value.trim();save();draw()"></div><div class="k"><button class="sm" onclick="tuto(0)">❓ Revoir l’aide</button> <button class="sm" onclick="D.vib=D.vib===0?1:0;save();draw()">📳 Vibration : '+(D.vib===0?"non":"oui")+'</button></div>'+LICC()+catHtml()+`<div class="k"><h3>➕ Ajouter une boisson</h3><div class="f"><div><label>Nom</label><input id="nn" placeholder="Ex : Bock"></div><div><label>Icône (emoji)</label><input id="ni" placeholder="🍺"></div><div><label>Prix d’achat du casier</label><input id="na" inputmode="numeric"></div><div><label>Prix de vente</label><input id="nv" inputmode="numeric"></div><div><label>Bouteilles / casier</label><input id="nc" inputmode="numeric" placeholder="12"></div><div><label>Stock initial</label><input id="ns" inputmode="numeric"></div></div><button class="big" style="background:var(--pri);margin-top:10px" onclick="nouv()">Ajouter</button></div>`+
+ D.p.map(function(p){var h=function(k,l,v){return `<div><label>${l}</label><input inputmode="numeric" value="${v}" onfocus="this.select()" onchange="ed(${p.id},'${k}',this.value)"></div>`};
+ return `<div class="k"><div style="display:flex;gap:8px;margin-bottom:8px">${EI(p)}<input value="${E(p.n)}" onchange="ed(${p.id},'n',this.value)"><button class="pm g" onclick="del(${p.id})">🗑️</button></div><div class="f">${h("ac","Prix d’achat du casier",AC(p))}${h("v","Prix de vente",p.v)}${h("c","Bouteilles / casier",p.c)}${h("s","Stock actuel",p.s)}</div><small style="margin-top:6px">Soit ${F(p.a)} la bouteille</small>${p.ok?"":'<div style="margin-top:8px;display:flex;align-items:center;gap:8px"><span class="alert">⚠️ À vérifier</span><button class="sm" onclick="okA('+p.id+')">✅ C’est bon</button></div>'}</div>`}).join("")+`<button class="sm" onclick="setPin()">🔒 Code patron</button> <button class="sm" onclick="raz()">Recommencer la configuration (efface tout)</button>`}
+
+var ob={step:1,sel:{}};
+function tg(k){ob.sel[k]=!ob.sel[k];drawOb()}
+function obNext(){if(!CAT.some(function(c){return ob.sel[c.k]})){toast("Touche au moins une boisson.");return}ob.step=2;drawOb();document.getElementById("m").scrollTop=0}
+function obEnd(){var g=function(i){return document.getElementById(i).value};
+ CAT.forEach(function(c){if(ob.sel[c.k])D.p.push({id:Date.now()+D.p.length,k:c.k,n:c.n,i:c.i,ac:num(g("oa"+c.k)),a:num(g("oa"+c.k))/(num(g("oc"+c.k))||1),ok:num(g("oa"+c.k))!=c.a*c.c?1:0,v:num(g("ov"+c.k)),c:num(g("oc"+c.k))||1,s:num(g("os"+c.k))})});
+ D.setup=true;tab=0;save();draw();tuto(0)}
+function drawOb(){var m=document.getElementById("m"),h;document.getElementById("nav").innerHTML="";
+ if(ob.step==1)h=`<h2 style="margin:4px 0">👋 Bienvenue !</h2><p class="hint">Touche les boissons que tu vends dans ton maquis. Tu pourras en ajouter d’autres plus tard.</p><div class="grid">`+CAT.map(function(c){var on=ob.sel[c.k];return `<button class="tile" style="border-color:${on?"var(--pri)":"var(--br)"};background:${on?"var(--bg)":"var(--card)"}" onclick="tg('${c.k}')"><div class="ic">${IC(c,72)}</div><div class="n">${c.n}</div><div class="p">${on?"✅ Je la vends":"Toucher pour choisir"}</div></button>`}).join("")+`</div><button class="big" style="background:var(--pri);margin-top:14px" onclick="obNext()">Suivant → (${CAT.filter(function(c){return ob.sel[c.k]}).length})</button><button class="sm" style="width:100%;margin-top:8px" onclick="obEmpty()">Aucune de ces boissons : commencer vide</button><div class="k" style="margin-top:12px"><button class="sm" onclick="rsShow()">♻️ J’ai déjà une sauvegarde</button><div id="bk"></div></div>`;
+ else h=`<h2 style="margin:4px 0">💰 Vérifie tes prix</h2><p class="hint">Ce sont des prix de départ : corrige-les avec tes vrais prix. Le prix d’achat est celui d’un <b>casier</b> (voir la facture du dépôt). Le stock peut rester à 0.</p>`+CAT.filter(function(c){return ob.sel[c.k]}).map(function(c){var f=function(p,l,v){return `<div><label>${l}</label><input id="${p}${c.k}" inputmode="numeric" value="${v}" onfocus="this.select()"></div>`};return `<div class="k"><div style="font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px"><span style="width:36px;flex:none">${IC(c,36)}</span>${c.n}</div><div class="f">${f("oa","Prix d’achat du casier",c.a*c.c)}${f("ov","Prix de vente",c.v)}${f("oc","Bouteilles / casier",c.c)}${f("os","Stock actuel",0)}</div></div>`}).join("")+`<button class="big" onclick="obEnd()">✅ Terminer</button><button class="sm" onclick="ob.step=1;drawOb()">← Retour</button>`;
+ m.innerHTML=h}
+function catHtml(){var r=CAT.filter(function(c){return!D.p.some(function(p){return p.k==c.k})});if(!r.length)return"";
+ return `<div class="k"><h3>📋 Ajouter depuis le catalogue</h3><div style="display:flex;flex-wrap:wrap;gap:8px">`+r.map(function(c){return `<button class="sm" onclick="addCat('${c.k}')"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:24px;flex:none">${IC(c,24)}</span>${c.n}</span></button>`}).join("")+`</div><small style="margin-top:6px">Prix de départ à corriger ensuite.</small></div>`}
+function addCat(k){var c=CAT.filter(function(x){return x.k==k})[0];D.p.push({id:Date.now(),k:c.k,n:c.n,i:c.i,a:c.a,v:c.v,c:c.c,s:0});save();draw()}
+var LBL={vente:"🛒 Vendu",casse:"💥 Casse",offert:"🎁 Offert",nonpaye:"📒 Non payé",recouvre:"✅ Crédit payé",arrivage:"📥 Reçu (casiers)",rendu:"📤 Rendu (casiers)",ajust:"🔧 Correction stock",paiement:"💵 Crédit payé",depense:"💸 Dépense"},UN=false,tt;
+function STK(p){if(p.s<0)return "⚠️ "+p.s+" à vérifier";var n=Math.floor(p.s/(p.c||1));return p.s+" ("+n+" casier"+(n>1?"s":"")+")"}
+function toast(t,u){var e=document.getElementById("ts");if(!e){e=document.createElement("div");e.id="ts";document.body.appendChild(e)}e.innerHTML="<span>"+E(t)+"</span>"+(u?'<button class="sm" style="color:#2a2118" onclick="undo()">↩️ Annuler</button>':"");e.style.display="flex";clearTimeout(tt);tt=setTimeout(function(){e.style.display="none"},u?3500:2200)}
+function dlg(msg,ok,inp,val){var o=document.createElement("div");o.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9";
+ o.innerHTML='<div class="k" style="max-width:340px;width:100%;margin:0"><p style="margin-top:0">'+msg+'</p>'+(inp?'<input id="dv" type="'+(inp==2?"text":"password")+'" inputmode="numeric" '+(inp==2?'value="'+(val||"")+'"':'maxlength="4"')+' style="margin-bottom:10px">':"")+'<div class="gap" style="justify-content:flex-end"><button class="sm" id="dn">Non</button><button class="sm" id="dy" style="background:var(--pri);color:#fff">OK</button></div></div>';
+ document.body.appendChild(o);document.getElementById("dn").onclick=function(){o.remove()};document.getElementById("dy").onclick=function(){var v=inp?document.getElementById("dv").value:1;o.remove();ok(v)}}
+function setPin(){dlg("Choisis un code patron à 4 chiffres. Laisse vide pour l’enlever.",function(v){if(v===""){delete D.pin;save();toast("Code retiré");draw()}else if(/^\d{4}$/.test(v)){D.pin=v;UN=true;save();toast("Code enregistré 🔒");draw()}else toast("Il faut 4 chiffres.")},1)}
+function delE(i){dlg("Supprimer cette opération ?",function(){var e=D.log.splice(i,1)[0];if(e){eff(e,-1);save();draw()}})}
+function JR(){var d=td(),h="",n=0;for(var i=D.log.length-1;i>=0&&n<12;i--){var e=D.log[i],p=P(e.pid);if(dk(e.t)!=d||(!p&&e.type!="paiement"&&e.type!="depense"))continue;n++;
+ h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--br)"><small style="width:42px">'+new Date(e.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</small><span style="flex:1">'+LBL[e.type]+" · "+E(p?p.n+(e.c?" ("+e.c+")":""):(e.c||e.l||""))+'</span><b>'+(p?(e.q>0?"+":"")+e.q:F(e.amt))+'</b><button class="sm" style="padding:4px 9px" onclick="delE('+i+')">✖</button></div>'}
+ return '<div class="k"><h3>📜 Dernières opérations du jour</h3>'+(h||"<small>Rien pour l’instant.</small>")+'</div>'}
+function clo(k,v){var d=td();D.cl=D.cl||{};D.cl[d]=D.cl[d]||{};D.cl[d][k]=num(v);save();draw()}
+function CL(){var d=td(),c=(D.cl||{})[d]||{},r=sum(d),t=(c.e||0)+(c.w||0)+(c.o||0)+(c.m||0),ex=r.rec-r.cr+r.rc-r.dep,ec=t-ex,has=D.cl&&D.cl[d];
+ var f=function(k,l){return '<div><label>'+l+'</label><input inputmode="numeric" placeholder="0" value="'+(c[k]||"")+'" onfocus="this.select()" onchange="clo(\''+k+'\',this.value)"></div>'};
+ return '<div class="k"><h3>🧾 Clôture de caisse</h3><div class="f">'+f("e","💵 Espèces")+f("w","🌊 Wave")+f("o","🟠 Orange Money")+f("m","🟡 MTN MoMo")+'</div><div style="margin-top:8px"><small>Attendu : '+F(ex)+' (ventes encaissées + crédits payés − dépenses)</small><b>Total compté : '+F(t)+'</b>'+(has?'<div style="font-weight:800;color:var('+(ec<0?"--ko":"--ok")+')">'+(ec==0?"✅ Caisse juste":ec<0?"⚠️ Il manque "+F(-ec):"ℹ️ En trop : "+F(ec))+'</div>':'<small>En fin de journée, compte l’argent et entre les montants.</small>')+'</div></div>'}
+function BK(){return '<div class="k"><h3>💾 Sauvegarde</h3><small style="margin-bottom:8px">Fais-la chaque semaine : si le téléphone est perdu ou réinitialisé, les données le sont aussi.</small><div class="gap"><button class="sm" onclick="bkShow()">📋 Sauvegarder</button><button class="sm" onclick="rsShow()">♻️ Restaurer</button><button class="sm" onclick="csv()">📄 Tableur</button></div><div id="bk"></div></div>'}
+function bkShow(){document.getElementById("bk").innerHTML='<p class="hint">Copie ce texte et envoie-le-toi sur WhatsApp (discussion avec toi-même).</p><textarea id="bkt" readonly style="width:100%;height:100px" onfocus="this.select()">'+E(SNAP())+'</textarea><div class="gap" style="margin-top:6px"><button class="sm" onclick="bkCopy()">Copier</button><button class="sm" onclick="bkShare()">📤 Partager</button><button class="sm" onclick="window.open(\'https://wa.me/?text=\'+encodeURIComponent(SNAP()),\'_blank\')">📲 WhatsApp</button></div>'}
+function bkCopy(){var t=document.getElementById("bkt");t.select();try{document.execCommand("copy");D.bk=Date.now();save();toast("Copié ✅")}catch(e){toast("Copie à la main.")}}
+function rsShow(){document.getElementById("bk").innerHTML='<p class="hint">Colle ici ta sauvegarde puis touche Restaurer.</p><textarea id="rst" style="width:100%;height:100px"></textarea><button class="sm" style="margin-top:6px" onclick="rsGo()">Restaurer</button>'}
+function rsGo(){var o;try{o=JSON.parse(document.getElementById("rst").value)}catch(e){}if(!o||!Array.isArray(o.p)||!Array.isArray(o.log)){toast("Sauvegarde non reconnue.");return}
+ dlg("Remplacer toutes les données actuelles par cette sauvegarde ?",function(){o.dev=D.dev;o.lic=D.lic;if(!o.nom)o.nom=D.nom;D=o;D.setup=true;save();draw();toast("Données restaurées ✅")})}
+var CR={n:"",q:{}},CRL=[],TU=[["👆","Vendre","Touche la bouteille : 1 appui = 1 vente. Pour plusieurs, tape le nombre."],["↩️","Une erreur ?","Touche « Annuler » juste après, ou ✖ dans la liste du Bilan."],["📊","Fin de journée","Dans Bilan : compte l’argent (espèces, Wave, Orange, MTN), vérifie l’écart, puis fais ta sauvegarde."]];
+function tuto(n){var o=document.getElementById("tu");if(o)o.remove();if(n>=TU.length)return;var t=TU[n];o=document.createElement("div");o.id="tu";o.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9";
+ o.innerHTML='<div class="k" style="max-width:340px;width:100%;margin:0;text-align:center"><div style="font-size:56px">'+t[0]+'</div><h2 style="margin:6px 0">'+t[1]+'</h2><p>'+t[2]+'</p><button class="big" style="background:var(--pri)" onclick="tuto('+(n+1)+')">'+(n==2?"C’est parti ✅":"Suivant →")+'</button><small>'+(n+1)+' / 3</small></div>';document.body.appendChild(o)}
+function role(){if(D.role=="gerant"){if(D.pin&&!UN){dlg("Code patron (4 chiffres) :",function(v){if(v==D.pin){UN=true;D.role="patron";save();draw()}else toast("Code incorrect.")},1)}else{D.role="patron";save();draw()}}else{D.role="gerant";UN=false;tab=0;save();draw();toast("Mode gérant(e) : caisse, pertes et crédits seulement")}}
+function fq(q){q=q.toLowerCase();document.querySelectorAll("#m .tile").forEach(function(t){t.style.display=t.textContent.toLowerCase().indexOf(q)<0?"none":""})}
+function BAL(){var m={};D.log.forEach(function(e){var k=e.c||"(sans nom)",p=P(e.pid);
+ if(e.type=="nonpaye"&&p)m[k]=(m[k]||0)+e.q*(e.pv==null?p.v:e.pv);
+ else if(e.type=="paiement")m[k]=(m[k]||0)-e.amt;
+ else if(e.type=="recouvre"&&p)m[k]=(m[k]||0)-e.q*(e.pv==null?p.v:e.pv)});return m}
+function CRT(){var m=BAL(),t=0;for(var k in m)if(m[k]>0)t+=m[k];return t}
+function crq(id,d){CR.q[id]=Math.max(0,(CR.q[id]||0)+d);draw()}
+function crSave(){var n=CR.n.trim(),it=D.p.filter(function(p){return CR.q[p.id]>0});
+ if(!n){toast("Écris le nom du client.");return}if(!it.length){toast("Choisis au moins une boisson.");return}
+ var tot=0;it.forEach(function(p){tot+=CR.q[p.id]*p.v;add("nonpaye",p.id,CR.q[p.id],n)});CR={n:"",q:{}};draw();toast("📒 Crédit enregistré : "+n+" · "+F(tot))}
+function payCr(i){var k=CRL[i][0],b=CRL[i][1];dlg("Paiement de "+E(k)+" (reste "+F(b)+"). Montant reçu :",function(v){var a=Math.min(num(v),b);if(!a){toast("Montant vide.");return}D.log.push({t:Date.now(),type:"paiement",c:k,amt:a});save();draw();toast("✅ "+k+" : "+F(a)+" reçus",1)},2,b)}
+function vCredits(){var m=BAL(),l=[];for(var k in m)if(m[k]>0)l.push([k,m[k]]);l.sort(function(a,b){return b[1]-a[1]});CRL=l;
+ var h='<div class="k"><h3>📒 Reste à récupérer</h3><div class="v">'+F(CRT())+'</div></div>';
+ h+=l.length?l.map(function(x,i){return '<div class="row"><div class="t"><b>'+E(x[0])+'</b><small>doit '+F(x[1])+'</small></div><button class="pm" style="width:auto;padding:0 14px;font-size:16px" onclick="payCr('+i+')">Payer</button></div>'}).join(""):'<p class="hint">Aucun crédit en cours.</p>';
+ h+='<div class="k" style="margin-top:12px"><h3>➕ Nouveau crédit</h3><input list="cl" placeholder="Nom du client" value="'+E(CR.n)+'" oninput="CR.n=this.value"><datalist id="cl">'+l.map(function(x){return'<option value="'+E(x[0])+'">'}).join("")+'</datalist><div style="margin-top:8px">'+
+ D.p.map(function(p){var q=CR.q[p.id]||0;return '<div class="row"><div style="width:36px;flex:none">'+IC(p,36)+'</div><div class="t"><b>'+E(p.n)+'</b><small>'+F(p.v)+'</small></div><button class="pm g" onclick="crq('+p.id+',-1)">−</button><b style="width:26px;text-align:center">'+q+'</b><button class="pm" onclick="crq('+p.id+',1)">+</button></div>'}).join("")+'</div><button class="big" style="background:var(--pri)" onclick="crSave()">Enregistrer le crédit</button></div>';
+ return h}
+function dep(){var l=document.getElementById("dl").value,a=num(document.getElementById("da").value);if(!a){toast("Entre le montant.");return}D.log.push({t:Date.now(),type:"depense",amt:a,l:l});save();draw();toast("💸 "+l+" · "+F(a),1)}
+function DP(){var o=["Électricité","Glace","Salaire","Transport","Loyer","Autre"];return '<div class="k"><h3>💸 Dépense du jour</h3><div class="f"><div><label>Type</label><select id="dl" style="width:100%;font:inherit;padding:10px;border-radius:12px;border:1px solid var(--br);background:var(--bg);color:var(--tx)">'+o.map(function(x){return"<option>"+x+"</option>"}).join("")+'</select></div><div><label>Montant (F)</label><input id="da" inputmode="numeric" placeholder="0"></div></div><button class="big" style="background:var(--pri);margin-top:10px" onclick="dep()">Ajouter la dépense</button></div>'}
+function BKW(){var d=D.bk?Math.floor((Date.now()-D.bk)/864e5):99;if(d<7||D.log.length<5)return"";return '<div class="k" style="border-color:var(--ko)"><b>💾 '+(D.bk?"Pas de sauvegarde depuis "+d+" jours.":"Aucune sauvegarde faite.")+'</b><small>Descends en bas de cet écran : Sauvegarder.</small></div>'}
+function bkShare(){var j=SNAP();try{var f=new File([j],"mon-maquis-sauvegarde.json",{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:"Sauvegarde Mon Maquis"}).then(function(){D.bk=Date.now();save()}).catch(function(){});return}}catch(e){}bkCopy()}
+function csv(){var r=[["Date","Heure","Type","Boisson","Quantité","Prix achat","Prix vente","Client / libellé","Montant"]];
+ D.log.forEach(function(e){var p=P(e.pid)||{},d=new Date(e.t);r.push([dk(e.t),d.toLocaleTimeString("fr-FR"),e.type,p.n||"",e.q||"",e.pa==null?p.a||"":e.pa,e.pv==null?p.v||"":e.pv,e.c||e.l||"",e.amt||""])});
+ var t="\ufeff"+r.map(function(x){return x.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(";")}).join("\n");
+ var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv"}));a.download="mon-maquis-"+td()+".csv";document.body.appendChild(a);a.click();a.remove();D.bk=Date.now();save()}
+function rnd(){var a=new Uint8Array(16);try{crypto.getRandomValues(a)}catch(e){for(var i=0;i<16;i++)a[i]=Math.random()*256}return Array.prototype.map.call(a,function(x){return("0"+x.toString(16)).slice(-2)}).join("")}
+function vib(){if(D.vib!==0)try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
+function SNAP(){var o=JSON.parse(JSON.stringify(D));delete o.dev;delete o.lic;return JSON.stringify(o)}
+function obEmpty(){D.setup=true;tab=5;save();draw()}
+function stage(){if(!D.nom)return"nom";if(!licOK())return"code";if(!D.setup)return"ob";return"app"}
+function licOK(){if(!LIC_URL)return true;var L=D.lic;if(!L||!L.ok)return false;var a=Date.now()-L.last;return a<GRACE&&a>-864e5}
+function post(path,body){var c=new AbortController(),t=setTimeout(function(){c.abort()},12000);
+ return fetch(LIC_URL.replace(/\/+$/,"")+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:c.signal}).then(function(r){clearTimeout(t);return r.json()},function(e){clearTimeout(t);throw e})}
+function lmsg(t){var e=document.getElementById("lmsg");if(e)e.textContent=t}
+function normCode(s){return String(s).toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/O/g,"0").replace(/[IL]/g,"1")}
+function fmtCode(el){el.value=normCode(el.value).slice(0,16).replace(/(.{4})(?=.)/g,"$1-")}
+function lic(){var c=normCode(document.getElementById("lc").value);if(c.length!=16){lmsg("Le code a 16 caractères. Vérifie-le.");return}
+ var b=document.getElementById("lgo");b.disabled=true;b.textContent="Vérification…";
+ post("/activer",{code:c,device:D.dev}).then(function(r){
+  if(r.ok){D.lic={code:c,ok:true,last:Date.now()};save();draw();toast("✅ Application activée")}
+  else{b.disabled=false;b.textContent="Activer";lmsg(ERR[r.err]||"Code refusé.")}
+ }).catch(function(){b.disabled=false;b.textContent="Activer";lmsg("Pas de connexion. Connecte-toi à internet et réessaie.")})}
+function reverify(){var L=D.lic;post("/verifier",{code:L.code,device:D.dev}).then(function(r){
+  if(r.ok){L.last=Date.now();save();draw()}else{L.ok=false;L.err=r.err;save();draw()}
+ }).catch(function(){lmsg("Toujours pas de connexion.")})}
+function recheck(){if(!LIC_URL||!D.lic||!D.lic.ok||Date.now()-D.lic.last<REVERIF)return;
+ post("/verifier",{code:D.lic.code,device:D.dev}).then(function(r){
+  if(r.ok){D.lic.last=Date.now();save()}
+  else if(r.err=="invalide"||r.err=="revoque"||r.err=="utilise"){D.lic.ok=false;D.lic.err=r.err;save();draw()}
+ }).catch(function(){})}
+function nmGo(){var v=document.getElementById("mn").value.trim().replace(/\s+/g," ");if(v.length<2){toast("Écris le nom de ton maquis.");return}D.nom=v.slice(0,30);save();draw()}
+function vNom(){return '<div class="k" style="text-align:center;margin-top:24px"><div style="font-size:56px">🍺</div><h2 style="margin:6px 0">Bienvenue !</h2><p class="hint">Comment s’appelle ton maquis ?</p><input id="mn" maxlength="30" placeholder="Ex : O&#39;Show" onkeydown="if(event.key==\'Enter\')nmGo()"><button class="big" style="background:var(--pri);margin-top:12px" onclick="nmGo()">Continuer ›</button><p class="hint">Tu as déjà une sauvegarde ?</p><button class="sm" onclick="rsShow()">♻️ Restaurer</button><div id="bk"></div></div>'}
+function vCode(){var L=D.lic,lock=L&&!licOK(),sub,form;
+ if(lock&&L.ok){sub="Connecte-toi à internet pour vérifier ta licence, puis touche Réessayer.";form='<button class="big" style="background:var(--pri)" onclick="reverify()">Réessayer</button>'}
+ else{sub=lock?(ERR[L.err]||"Ta licence n’est plus valide.")+" Tu peux entrer un autre code.":"Entre le code d’activation reçu après ton achat.";
+  form='<input id="lc" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX" style="text-align:center;font-size:20px" oninput="fmtCode(this)" onkeydown="if(event.key==\'Enter\')lic()"><button id="lgo" class="big" style="background:var(--pri);margin-top:12px" onclick="lic()">Activer</button>'}
+ return '<div class="k" style="text-align:center;margin-top:24px"><div style="font-size:56px">🔑</div><h2 style="margin:6px 0">'+E(D.nom)+'</h2><p class="hint">'+E(sub)+'</p>'+form+'<div id="lmsg" role="alert" style="color:var(--ko);font-weight:700;min-height:22px;margin-top:8px"></div><p class="hint">Internet est nécessaire pour activer. Le code est personnel : il marche sur un nombre limité de téléphones.</p>'+
+ (BUY_URL?'<a class="sm" style="display:inline-block;text-decoration:none;margin:4px" href="'+E(BUY_URL)+'" target="_blank" rel="noopener">🛒 Je n’ai pas de code</a>':"")+(SUPPORT_WA?'<a class="sm" style="display:inline-block;text-decoration:none;margin:4px" href="https://wa.me/'+E(SUPPORT_WA)+'?text='+encodeURIComponent("Bonjour, j’ai besoin d’aide pour activer Mon Maquis ("+D.nom+").")+'" target="_blank" rel="noopener">💬 Besoin d’aide ?</a>':"")+'</div>'}
+function LICC(){var L=D.lic;return LIC_URL&&L&&L.ok?'<div class="k"><h3>🔑 Licence</h3><b style="color:var(--ok)">✅ Activée</b> <small>Code se terminant par '+E(L.code.slice(-4))+'</small></div>':""}
+function MIG(){if((D.cv||0)>=2)return;
+ var O={castel:[600,800],coca:[200,300],bock:[550,800],guinness:[700,1000],beaufort:[600,800],heineken:[700,1000],desperados:[800,1200],rhino:[600,800],"cody-beer":[600,1000],"cody-energy":[400,700],"vody-energy":[500,800],velpierre:[1500,2500],velpierre2:[1500,2500],orangina:[250,400]};
+ D.p.forEach(function(p){var k=p.k||((CAT.filter(function(c){return c.n==p.n})[0]||{}).k);
+  if(!k&&/^Velpierre/i.test(p.n))k=/\(2\)/.test(p.n)?"velpierre2":"velpierre";
+  var c=CAT.filter(function(x){return x.k==k})[0];if(!c)return;
+  if(k=="velpierre"||k=="velpierre2"){p.n=c.n;p.k=k}
+  var o=O[k];if(o&&p.a==o[0]&&p.v==o[1]){p.a=c.a;p.v=c.v}});
+ D.p=D.p.filter(function(p){return !(p.k=="flag"&&!D.log.some(function(e){return e.pid==p.id}))});
+ if(D.setup&&!D.p.some(function(p){return p.k=="velpierre"})){var c=CAT.filter(function(x){return x.k=="velpierre"})[0];D.p.push({id:Date.now(),k:c.k,n:c.n,i:c.i,a:c.a,v:c.v,c:c.c,s:0})}
+ D.cv=2;save()}
+function AC(p){return p.ac||Math.round(p.a*p.c)}
+function NV(){return D.p.filter(function(p){return !p.ok}).length}
+function okA(id){P(id).ok=1;save();draw()}
+function NVW(){var l=D.p.filter(function(p){return !p.ok});if(!l.length)return"";return '<div class="k" style="border-color:var(--ko)"><b>⚠️ Prix d’achat à vérifier pour '+l.length+' boisson'+(l.length>1?"s":"")+'</b><small style="margin:4px 0 8px">'+l.slice(0,5).map(function(p){return E(p.n)}).join(", ")+(l.length>5?"…":"")+' — la marge affichée est une estimation.</small><button class="sm" onclick="go(5)">Vérifier maintenant</button></div>'}
+function NVB(){var n=NV();return n?'<div class="k" style="border-color:var(--ko)"><b>⚠️ '+n+' prix d’achat à confirmer</b><small>Entre le prix du casier (facture du dépôt), ou touche « C’est bon » si le prix affiché est juste.</small></div>':""}
+var TB=[["🛒","Vendre",vVendre,1],["📦","Arrivage",vArrivage,0],["⚠️","Pertes",vPertes,1],["📒","Crédits",vCredits,1],["📊","Bilan",vBilan,0],["⚙️","Boissons",vBoissons,0]];
+function go(i){if(i==5&&D.pin&&!UN){dlg("Code patron (4 chiffres) :",function(v){if(v==D.pin){UN=true;go(5)}else toast("Code incorrect.")},1);return}tab=i;draw();document.getElementById("m").scrollTop=0}
+function scr(h){document.getElementById("nav").innerHTML="";document.getElementById("m").innerHTML=h}
+function draw(){var st=stage();document.getElementById("rl").style.display=st=="app"?"":"none";if(st=="nom"){scr(vNom());return}if(st=="code"){scr(vCode());return}if(st=="ob"){drawOb();return}var m=document.getElementById("m"),y=m.scrollTop,sv=D.role=="gerant";
+ if(sv&&!TB[tab][3])tab=0;
+ m.innerHTML=(!D.p.length&&tab<4)?'<p class="hint">Aucune boisson. Ajoute-en dans l’onglet Boissons.</p>':TB[tab][2]();
+ m.scrollTop=y;
+ document.getElementById("nav").innerHTML=TB.map(function(x,i){return sv&&!x[3]?"":`<button class="${i==tab?"on":""}" onclick="go(${i})"><span>${x[0]}</span>${x[1]}</button>`}).join("");
+ document.getElementById("br").textContent="🍺 "+(D.nom||"Mon Maquis");
+ document.getElementById("rl").textContent=sv?"🔓 Patron":"👤 Gérant(e)";
+ document.getElementById("dt").textContent=new Date(Date.now()-216e5).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})}
+draw();recheck();document.addEventListener("visibilitychange",function(){if(!document.hidden)recheck()});
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+if("serviceWorker"in navigator&&location.protocol.indexOf("http")==0)navigator.serviceWorker.register("sw.js").catch(function(){});
+</script>
+</body>
+</html>
